@@ -25,12 +25,14 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     # lambda = 0.5 * (1 - sigma) (inestabilidad de Darrieus-Landau)
     
     N = 256
+#    N = 512
     L = 100.0
     beta = 5.0
     Le = 0.3
     sigma = 0.15
     eta = 1.5
-    T_max = 50.
+    T_max = 25.
+#    T_max = 100.
     CFL = 0.5
     
     # parametros de la ecuacion
@@ -38,7 +40,7 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     gamma = 4.0
 
     # parametros del sts
-    M_sts, nu_sts = 4, 0.05
+    M_sts, nu_sts = 10, 0.005
     
     # parametros sph
     x = np.linspace(0, L, N, endpoint=False)
@@ -68,7 +70,12 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
 
             dt_adv *= fac
             dt_diff *= fac**2
-            dt_fourth *= fac**4 
+            dt_fourth *= fac**4
+
+        elif physics == 'sph':
+             dt_adv *= 0.25
+             dt_diff *= 0.125
+             dt_fourth *= 0.0125
               
         return CFL * min(dt_adv, dt_diff, dt_fourth)
 
