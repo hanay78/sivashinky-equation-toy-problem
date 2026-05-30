@@ -4,53 +4,52 @@ from geometry import calcular_distancias_periodicas
 
 def _gradiente_sph_simetrico(field, grad_W, m, rho):
 
-    """Gradiente 1D optimizado para rho y h constantes."""
+    """Gradiente 1D optimizado (field_j - field_i)."""
 
-    field_diff = field[:, np.newaxis] - field[np.newaxis, :]
+    field_diff = field[np.newaxis, :] - field[:, np.newaxis]
 
-    # Si rho es constante: 0.5 * m * (1/rho + 1/rho) = m / rho
-    grad_factor = m / rho
+    vol_j = m / rho
 
-    return np.sum(grad_factor * field_diff * grad_W, axis=1)
+    return np.sum(vol_j[np.newaxis, :] * field_diff * grad_W, axis=1)
 
 def _laplaciano_brookshaw(field, grad_W, dx, m, rho):
 
-    """Laplaciano 1D optimizado para rho y h constantes."""
+    """Laplaciano 1D de Brookshaw (field_i - field_j)."""
 
     field_diff = field[:, np.newaxis] - field[np.newaxis, :]
 
-    # Si rho es constante: 4 * m / (2 * rho) = 2 * m / rho
-    factor = 2.0 * m / rho
+    vol_j = m / rho
 
     psi = np.zeros_like(dx)
     mask = np.abs(dx) > 1e-12
     psi[mask] = grad_W[mask] / dx[mask]
 
-    return np.sum(factor * field_diff * psi, axis=1)
+    return np.sum(2.0 * vol_j[np.newaxis, :] * field_diff * psi, axis=1)
 
 def _hilbert_sph(field, dx, m, rho, L):
 
-    """Transformada de Hilbert periódica optimizada."""
+    """Transformada de Hilbert periódica estable."""
 
     mask = np.abs(dx) > 1e-12
     cot_kernel = np.zeros_like(dx)
     cot_kernel[mask] = 1.0 / np.tan(np.pi * dx[mask] / L)
 
-    # Si rho es constante: m / rho es constante
+    vol_j = m / rho
+    field_diff = field[np.newaxis, :] - field[:, np.newaxis]
 
-    return (m / (rho * L)) * np.sum(field[np.newaxis, :] * cot_kernel, axis=1)
+    return np.sum((vol_j[np.newaxis, :] / L) * field_diff * cot_kernel, axis=1)
 
-def evaluar_sistema_movil(x, u, m, rho, h, beta, Le, sigma, L):
+def evaluar_sistema_movil(x, u, h_field, m, rho, h_smooth, beta, Le, sigma, L):
 
     """
     Calcula las derivadas de la ecuación de Sivashinsky (1993) en 1D.
-    Asume que rho y h son constantes para maximizar eficiencia.
+    Asume que rho y h_smooth son constantes para maximizar eficiencia.
     """
 
     dx = calcular_distancias_periodicas(x, L)
 
-    # Con h constante, solo necesitamos una llamada al kernel
-    _, grad_W = kernel_quintico(dx, h)
+    # Con h_smooth constante, solo necesitamos una llamada al kernel
+    _, grad_W = kernel_quintico(dx, h_smooth)
 
     # Coeficientes según Sivashinsky (1993):
     alpha = 0.5 * beta * (1.0 - Le) - 1.0
@@ -63,10 +62,13 @@ def evaluar_sistema_movil(x, u, m, rho, h, beta, Le, sigma, L):
     
     u_xx = lap_u
     grad_lap_u = _gradiente_sph_simetrico(lap_u, grad_W, m, rho)
-    u_xxx = -grad_lap_u
+    u_xxx = grad_lap_u
     u_xxxx = _laplaciano_brookshaw(lap_u, grad_W, dx, m, rho)
 
     # Términos de Hilbert:
+    # Según la relación I(f) = (1/2pi) * H(f_x)
+    # I_h (Darrieus-Landau para h) = (1/2pi) * H(u) si u=h_x
+    # I_hx (Darrieus-Landau para u) = (1/2pi) * H(u_x)
 
     hilbert_u = _hilbert_sph(u, dx, m, rho, L)
     hilbert_ux = _hilbert_sph(u_x, dx, m, rho, L)
