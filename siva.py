@@ -31,7 +31,8 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     sigma = 0.15
     eta = 1.5
     T_max = 5.
-
+    CFL = 0.5
+    
     # parametros de la ecuacion
     alpha = 0.5 * beta * (1.0 - Le) - 1.0
     gamma = 4.0
@@ -69,7 +70,7 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
             dt_diff *= fac**2
             dt_fourth *= fac**4 
               
-        return 0.25 * min(dt_adv, dt_diff, dt_fourth)
+        return CFL * min(dt_adv, dt_diff, dt_fourth)
 
     def check_estabilidad(u_test, h_test, dt_step):
         v_max = np.max(np.abs(u_test))
@@ -140,8 +141,7 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
             print(f"t: {t_fisico:.3f} | u_max: {v_max:.2f} | h_min: {h_min:.2e}", end="\r", flush=True)
         
         paso += 1
-        if paso > 20000000: break
-
+       
     end_time = time.time()
     print(f"\nSimulación finalizada en {end_time - start_time:.2f} segundos.")
 
