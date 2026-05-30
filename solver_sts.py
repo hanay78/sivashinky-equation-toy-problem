@@ -27,23 +27,28 @@ def realizar_ciclo_sts(dt_expl, M_sts, nu_sts, x, u, h_field, m, rho_const, h_sm
     return x, u, h_field, t_fisico
 
 def realizar_ciclo_sts2(dt_expl, M_sts, nu_sts, x, u, h_field, m, rho_const, h_smooth_len, beta, Le, sigma, L, t_fisico, T_max, evaluar_sistema_movil):
-    """Realiza un ciclo de Super Time Stepping usando RK2 para los sub-pasos."""
+    """
+    Realiza un ciclo de Super Time Stepping usando RK2 (Punto Medio).
+    Diseñado para ser robusto y seguir la estructura de realizar_ciclo_sts.
+    """
     tau_j = calcular_pasos_sts(dt_expl, M_sts, nu_sts)
 
     for tau in tau_j:
-        # K1 (Euler step)
-        du1, dh1, vm1 = evaluar_sistema_movil(x=x, u=u, h_field=h_field, m=m, rho=rho_const, h_smooth=h_smooth_len, beta=beta, Le=Le, sigma=sigma, L=L)
+        # K1: Evaluación inicial
+        k1_u, k1_h, k1_x = evaluar_sistema_movil(x=x, u=u, h_field=h_field, m=m, rho=rho_const, h_smooth=h_smooth_len, beta=beta, Le=Le, sigma=sigma, L=L)
         
-        x_mid = np.mod(x + tau * vm1, L)
-        u_mid = u + tau * du1
-        h_mid = h_field + tau * dh1
+        # Predictor al punto medio (0.5 * tau)
+        x_mid = np.mod(x + 0.5 * tau * k1_x, L)
+        u_mid = u + 0.5 * tau * k1_u
+        h_mid = h_field + 0.5 * tau * k1_h
         
-        # K2 (Corrector step)
-        du2, dh2, vm2 = evaluar_sistema_movil(x=x_mid, u=u_mid, h_field=h_mid, m=m, rho=rho_const, h_smooth=h_smooth_len, beta=beta, Le=Le, sigma=sigma, L=L)
+        # K2: Evaluación en el punto medio
+        k2_u, k2_h, k2_x = evaluar_sistema_movil(x=x_mid, u=u_mid, h_field=h_mid, m=m, rho=rho_const, h_smooth=h_smooth_len, beta=beta, Le=Le, sigma=sigma, L=L)
         
-        u = u + 0.5 * tau * (du1 + du2)
-        h_field += 0.5 * tau * (dh1 + dh2)
-        x = np.mod(x + 0.5 * tau * (vm1 + vm2), L)
+        # Corrector final
+        u = u + tau * k2_u
+        h_field += tau * k2_h
+        x = np.mod(x + tau * k2_x, L)
         
         t_fisico += tau
         if t_fisico >= T_max: break
