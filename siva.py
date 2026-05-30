@@ -30,7 +30,7 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     Le = 0.3
     sigma = 0.15
     eta = 1.5
-    T_max = 5.
+    T_max = 50.
     CFL = 0.5
     
     # parametros de la ecuacion
