@@ -13,9 +13,9 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     if physics == 'sph':
         from physics2 import evaluar_sistema_movil
     elif physics == 'spc':
-        from physics_fd import evaluar_sistema_movil        
+        from physics_spc import evaluar_sistema_movil        
     elif physics == 'fd':
-        from physics_spc import evaluar_sistema_movil
+        from physics_fd import evaluar_sistema_movil
         
     # beta: Zeldovich number,
     # Le: Lewis number,
@@ -30,7 +30,7 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     Le = 0.3
     sigma = 0.15
     eta = 1.5
-    T_max = 5.5
+    T_max = 5.
 
     # parametros de la ecuacion
     alpha = 0.5 * beta * (1.0 - Le) - 1.0
@@ -69,7 +69,7 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
             dt_diff *= fac**2
             dt_fourth *= fac**4 
               
-        return 0.05 * min(dt_adv, dt_diff, dt_fourth)
+        return 0.25 * min(dt_adv, dt_diff, dt_fourth)
 
     def check_estabilidad(u_test, h_test, dt_step):
         v_max = np.max(np.abs(u_test))
@@ -140,7 +140,7 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
             print(f"t: {t_fisico:.3f} | u_max: {v_max:.2f} | h_min: {h_min:.2e}", end="\r", flush=True)
         
         paso += 1
-        if paso > 200000: break
+        if paso > 20000000: break
 
     end_time = time.time()
     print(f"\nSimulación finalizada en {end_time - start_time:.2f} segundos.")
