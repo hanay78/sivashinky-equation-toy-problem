@@ -5,6 +5,7 @@ import time
 from geometry import ajustar_rho_y_h
 import solver_rk
 import solver_sts
+import solver_rkl
 from visuals import animar_sivashinsky
 from initial_condition import establecer_condiciones_iniciales
 
@@ -23,7 +24,7 @@ def simular_ks_sts(metodo='sts2', physics='sph', save_video=False):
     # alpha_eff = 0.5 * beta * (1 - Le) - 1 (inestabilidad termo-difusiva)
     # gamma = 4.0 (estabilización a escalas cortas)
     # lambda = 0.5 * (1 - sigma) (inestabilidad de Darrieus-Landau)
-    
+
 #    N = 256
 #    N = 512
     N = 1024
@@ -32,8 +33,8 @@ def simular_ks_sts(metodo='sts2', physics='sph', save_video=False):
     Le = 0.3
     sigma = 0.15
     eta = 1.5
-#    T_max = 25.
-    T_max = 100.
+    T_max = 25.
+#    T_max = 100.
     CFL = 0.5
     
     # parametros de la ecuacion
@@ -42,6 +43,10 @@ def simular_ks_sts(metodo='sts2', physics='sph', save_video=False):
 
     # parametros del sts
     M_sts, nu_sts = 10, 0.005
+
+    # parametro del rkl2
+
+    M_rkl2 = 2000
     
     # parametros sph
     x = np.linspace(0, L, N, endpoint=False)
@@ -113,22 +118,13 @@ def simular_ks_sts(metodo='sts2', physics='sph', save_video=False):
                 t_fisico=t_fisico, T_max=T_max, 
                 evaluar_sistema_movil=evaluar_sistema_movil
             )
-        elif metodo == 'sts2':
-            x, u, h_field, t_fisico = solver_sts.realizar_ciclo_sts2(
-                dt_expl=dt_expl, M_sts=M_sts, nu_sts=nu_sts, x=x, u=u, h_field=h_field, 
+        elif metodo == 'rkl2':
+            x, u, h_field, t_fisico = solver_rkl.realizar_ciclo_rkl2(
+                dt_expl=dt_expl, s=M_rkl2, x=x, u=u, h_field=h_field, 
                 m=m, rho_const=rho_const, h_smooth_len=h_smooth_len, 
                 beta=beta, Le=Le, sigma=sigma, L=L, 
                 t_fisico=t_fisico, T_max=T_max, 
                 evaluar_sistema_movil=evaluar_sistema_movil
-            )
-        elif metodo == 'sts4':
-            x, u, h_field, t_fisico, dt_expl = solver_sts.realizar_ciclo_sts4(
-                dt=dt_expl, M_sts=M_sts, nu_sts=nu_sts, x=x, u=u, h_field=h_field, 
-                m=m, rho_const=rho_const, h_smooth_len=h_smooth_len, 
-                beta=beta, Le=Le, sigma=sigma, L=L, 
-                t_fisico=t_fisico, T_max=T_max, 
-                evaluar_sistema_movil=evaluar_sistema_movil, 
-                check_estabilidad=check_estabilidad
             )
         elif metodo == 'rk4':
             x, u, h_field, t_fisico, dt_expl = solver_rk.realizar_paso_rk4(
@@ -164,7 +160,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
             arg_low = arg.lower()
-            if arg_low in ['sts', 'sts2', 'rk4', 'sts4']:
+            if arg_low in ['sts', 'rk4', 'rkl2']:
                 metodo = arg_low
             elif arg_low in ['sph', 'fd', 'spc']:
                 physics = arg_low
