@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
-def animar_sivashinsky(hist_x, hist_h, hist_u, hist_t, L, N, t_final):
+def animar_sivashinsky(hist_x, hist_h, hist_u, hist_t, L, N, t_final, save_video=False):
     """
     Visualización en 2x2:
     - Superior Izquierda: h(x) con escala adaptativa.
@@ -117,31 +117,32 @@ def animar_sivashinsky(hist_x, hist_h, hist_u, hist_t, L, N, t_final):
     plt.savefig('siva_result.png', dpi=120)
 
     # 2. Guardar la animación como video (Alta Eficiencia y Resolución)
-    # try:
-    #     # Calculamos un salto de frames para optimizar el tiempo de renderizado
-    #     # Apuntamos a un máximo de ~600 frames para un vídeo de ~20s a 30fps
-    #     total_steps = len(hist_t)
-    #     n_frames_objetivo = 600
-    #     skip = max(1, total_steps // n_frames_objetivo)
-        
-    #     print(f"Exportando {total_steps//skip} frames a 'siva_animation.mp4' (Alta Calidad)...", flush=True)
-        
-    #     # Creamos una versión filtrada de la animación solo para el guardado
-    #     # Esto evita renderizar frames redundantes que el ojo no apreciaría a 30fps
-    #     ani.save('siva_animation.mp4', 
-    #              writer='ffmpeg', 
-    #              fps=30, 
-    #              dpi=120, # Mantenemos alta resolución
-    #              extra_args=[
-    #                  '-vcodec', 'libx264', 
-    #                  '-preset', 'ultrafast', # Prioriza velocidad de encoding
-    #                  '-threads', '0',        # Usa todos los núcleos disponibles
-    #                  '-crf', '18',           # Calidad visual casi idéntica a la original
-    #                  '-pix_fmt', 'yuv420p'
-    #              ])
-    #     print("Vídeo guardado correctamente.", flush=True)
-    # except Exception as e:
-    #     print(f"Nota: No se pudo guardar el MP4. Error: {e}", flush=True)
+    if save_video:
+        try:
+            # Calculamos un salto de frames para optimizar el tiempo de renderizado
+            # Apuntamos a un máximo de ~600 frames para un vídeo de ~20s a 30fps
+            total_steps = len(hist_t)
+            n_frames_objetivo = 600
+            skip = max(1, total_steps // n_frames_objetivo)
+            
+            print(f"Exportando {total_steps//skip} frames a 'siva_animation.mp4' (Alta Calidad)...", flush=True)
+            
+            # Creamos una versión filtrada de la animación solo para el guardado
+            # Esto evita renderizar frames redundantes que el ojo no apreciaría a 30fps
+            ani.save('siva_animation.mp4', 
+                     writer='ffmpeg', 
+                     fps=30, 
+                     dpi=120, # Mantenemos alta resolución
+                     extra_args=[
+                         '-vcodec', 'libx264', 
+                         '-preset', 'ultrafast', # Prioriza velocidad de encoding
+                         '-threads', '0',        # Usa todos los núcleos disponibles
+                         '-crf', '18',           # Calidad visual casi idéntica a la original
+                         '-pix_fmt', 'yuv420p'
+                     ])
+            print("Vídeo guardado correctamente.", flush=True)
+        except Exception as e:
+            print(f"Nota: No se pudo guardar el MP4. Error: {e}", flush=True)
 
     plt.show()
     return ani

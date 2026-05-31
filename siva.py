@@ -8,7 +8,7 @@ import solver_sts
 from visuals import animar_sivashinsky
 from initial_condition import establecer_condiciones_iniciales
 
-def simular_ks_sts(metodo='sts2', physics='sph'):
+def simular_ks_sts(metodo='sts2', physics='sph', save_video=False):
 
     if physics == 'sph':
         from physics2 import evaluar_sistema_movil
@@ -24,15 +24,16 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     # gamma = 4.0 (estabilización a escalas cortas)
     # lambda = 0.5 * (1 - sigma) (inestabilidad de Darrieus-Landau)
     
-    N = 256
+#    N = 256
 #    N = 512
+    N = 1024
     L = 100.0
-    beta = 5.0
+    beta = 10.0
     Le = 0.3
     sigma = 0.15
     eta = 1.5
-    T_max = 25.
-#    T_max = 100.
+#    T_max = 25.
+    T_max = 100.
     CFL = 0.5
     
     # parametros de la ecuacion
@@ -153,11 +154,12 @@ def simular_ks_sts(metodo='sts2', physics='sph'):
     print(f"\nSimulación finalizada en {end_time - start_time:.2f} segundos.")
 
     # Llamar a la visualización externa con hist_u
-    animar_sivashinsky(hist_x, hist_h, hist_u, hist_t, L, N, t_fisico)
+    animar_sivashinsky(hist_x, hist_h, hist_u, hist_t, L, N, t_fisico, save_video=save_video)
 
 if __name__ == "__main__":
     metodo = 'sts2'
     physics = 'sph'
+    save_video = False
     
     if len(sys.argv) > 1:
         for arg in sys.argv[1:]:
@@ -166,5 +168,7 @@ if __name__ == "__main__":
                 metodo = arg_low
             elif arg_low in ['sph', 'fd', 'spc']:
                 physics = arg_low
+            elif arg_low in ['video',]:
+                save_video = True
     
-    simular_ks_sts(metodo=metodo, physics=physics)
+    simular_ks_sts(metodo=metodo, physics=physics, save_video=save_video)

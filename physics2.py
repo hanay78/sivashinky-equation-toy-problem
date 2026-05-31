@@ -49,8 +49,9 @@ def evaluar_sistema_movil(x, u, h_field, m, rho, h_smooth, beta, Le, sigma, L):
     h_xx = _laplaciano_brookshaw(h_field, grad_W, dx, m, rho)
     h_xxxx = _laplaciano_brookshaw(h_xx, grad_W, dx, m, rho)
 
-    # 2. Término de Hilbert para h: I(h) = (1/2pi) * H(h_x)
-    I_h = (1.0 / (2.0 * np.pi)) * _hilbert_sph(h_x, dx, m, rho, L)
+    # 2. Término de Hilbert para h: I(h) = H(h_x)
+    # Este término es equivalente a |k|*h_hat en el espacio de Fourier.
+    I_h = _hilbert_sph(h_x, dx, m, rho, L)
 
     # 3. Evolución de h (Marco Lagrangiano)
     # h_t_euler = -0.5*(h_x^2) - alpha*h_xx - gamma*h_xxxx + lambda*I_h

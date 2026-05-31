@@ -43,6 +43,7 @@ def evaluar_sistema_movil(x, u, h_field, m, rho, h_smooth, beta, Le, sigma, L):
     # 3. Evolución de h (h_t)
     # h_t = -0.5*(h_x^2) - alpha*h_xx - gamma*h_xxxx + lambda*I_h
     # (Siguiendo exactamente la convención euleriana de physics_spc.py)
+   
     h_t = -0.5 * (h_x**2) - alpha * h_xx - gamma * h_xxxx + lambda_param * I_h
     dh_dt = h_t
 
